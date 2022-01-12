@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ build ]
+  pull_request:
+    branches: [ build ]
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    container: # Use archlinux since this makes getting the dependencies easier...
+      image: archlinux:base-devel
+      options: --privileged
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup
+
+
+    steps:
+      - name: Checkout build scripts
+        uses: actions/checkout@v2
+
+      - name: Checkout master branch
+        uses: actions/checkout@v2
+        with:
+          ref: master
+          path: verilatorjs
+
+      - name: Find latest verilator release
+        uses: oprypin/find-latest-tag@v1
+        with:
+          repository: verilator/verilator
+        id: verilator
+
+      - name: Print verilator version
+        run: echo "Verilator is at version ${{ steps.verilator.outputs.tag }}"
+
+      - name: Checkout latest verilator release
+        uses: actions/checkout@v2
+        with:
+          repository: verilator/verilator
+          ref: ${{ steps.verilator.outputs.tag }}
+          path: verilator
+
+      - name: Initialize ArchLinux
+        run: |
+          bash -e scripts/setup-archlinux.sh
+          chown -R user .
+
+      - name: Setting up build environment
+        run: |
+          . /etc/profile # set up PATH for emscripten
+          bash -e scripts/setup_build.sh . verilator
+
+      - name: Building verilator
+        run: |
+          . /etc/profile # set up PATH for emscripten
+          export MAKEFLAGS=-j$(nproc)
+          bash -e scripts/build_verilator.sh . verilator
