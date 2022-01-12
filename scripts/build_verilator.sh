@@ -10,5 +10,5 @@ export EM_NODE_JS="$builder_dir/scripts/node_wrapper"
 
 cd "$source_dir"
 autoconf
-emconfigure ./configure
-emmake make verilator_bin
+emconfigure ./configure --disable-defenv
+emmake make -C src opt
