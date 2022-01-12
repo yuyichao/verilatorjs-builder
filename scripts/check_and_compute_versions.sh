@@ -21,13 +21,13 @@ read_verilatorjs_version
 
 if [ "$verilator_ver" = "$old_verilator_ver" ] && [ "$build_ver" = "$old_build_ver" ]; then
     echo '::set-output name=uptodate::1'
-    return 0
+    exit 0
 fi
 
 echo '::set-output name=uptodate::0'
 if ! [[ "$verilator_ver" =~ ^v([0-9]+)\.([0-9]+)$ ]]; then
     echo "Unexpected verilator version format: ${verilator_ver}" >&2
-    return 1
+    exit 1
 fi
 
 echo "::set-output name=version::${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$build_ver"
