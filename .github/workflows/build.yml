@@ -61,3 +61,10 @@ jobs:
           . /etc/profile # set up PATH for emscripten
           export MAKEFLAGS=-j$(nproc)
           bash -e scripts/build_verilator.sh . verilator
+
+      - name: Update master branch
+        run: |
+          mkdir -p verilatorjs/dist
+          cp -v verilator/bin/verilator_bin verilatorjs/dist/verilator.js
+          cp -v verilator/bin/verilator_bin.wasm verilatorjs/dist/
+          cp verilator/LICENSE verilatorjs/
