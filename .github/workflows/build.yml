@@ -93,6 +93,8 @@ jobs:
         if: ${{ steps.version_check.outputs.uptodate != 1 }}
         run: |
           cd verilatorjs
+          git config --global user.name 'Yichao Yu'
+          git config --global user.email 'yuyichao@users.noreply.github.com'
           git status
           git add .
           git commit -m "Auto build of version ${{ steps.version_check.outputs.version }}"
