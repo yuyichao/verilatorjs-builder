@@ -87,7 +87,7 @@ jobs:
         if: ${{ steps.version_check.outputs.uptodate != 1 }}
         run: |
           cd verilatorjs
-          npm version ${{ steps.version_check.outputs.version }}
+          npm version ${{ steps.version_check.outputs.version }} --no-git-tag-version
 
       - name: Commit changes
         if: ${{ steps.version_check.outputs.uptodate != 1 }}
