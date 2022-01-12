@@ -36,10 +36,12 @@ jobs:
           repository: verilator/verilator
         id: verilator
 
-      - name: Print verilator version
-        run: echo "Verilator is at version ${{ steps.verilator.outputs.tag }}"
+      - name: Compute new version
+        run: bash -e scripts/check_and_compute_versions.sh "${{ steps.verilator.outputs.tag }}"
+        id: version_check
 
       - name: Checkout latest verilator release
+        if: ${{ steps.version_check.outputs.uptodate != 1 }}
         uses: actions/checkout@v2
         with:
           repository: verilator/verilator
@@ -47,24 +49,49 @@ jobs:
           path: verilator
 
       - name: Initialize ArchLinux
+        if: ${{ steps.version_check.outputs.uptodate != 1 }}
         run: |
           bash -e scripts/setup-archlinux.sh
           chown -R user .
 
       - name: Setting up build environment
+        if: ${{ steps.version_check.outputs.uptodate != 1 }}
         run: |
           . /etc/profile # set up PATH for emscripten
           bash -e scripts/setup_build.sh . verilator
 
       - name: Building verilator
+        if: ${{ steps.version_check.outputs.uptodate != 1 }}
         run: |
           . /etc/profile # set up PATH for emscripten
           export MAKEFLAGS=-j$(nproc)
           bash -e scripts/build_verilator.sh . verilator
 
       - name: Update master branch
+        if: ${{ steps.version_check.outputs.uptodate != 1 }}
         run: |
           mkdir -p verilatorjs/dist
           cp -v verilator/bin/verilator_bin verilatorjs/dist/verilator.js
           cp -v verilator/bin/verilator_bin.wasm verilatorjs/dist/
           cp verilator/LICENSE verilatorjs/
+
+      - name: Installing npm
+        if: ${{ steps.version_check.outputs.uptodate != 1 }}
+        run: |
+          sudo pacman -S --noconfirm npm
+
+      - name: Updating version
+        if: ${{ steps.version_check.outputs.uptodate != 1 }}
+        run: |
+          cd verilatorjs
+          npm version ${{ steps.version_check.outputs.version }}
+
+      - name: Commit changes
+        if: ${{ steps.version_check.outputs.uptodate != 1 }}
+        run: |
+          cd verilatorjs
+          git status
+          git add .
+          git commit -m "Auto build of version ${{ steps.version_check.outputs.version }}"
+          git tag "v${{ steps.version_check.outputs.version }}"
+          git push --follow-tags
