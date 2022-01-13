@@ -78,7 +78,7 @@ jobs:
           mkdir -p verilatorjs/dist
           cp -v verilator/bin/verilator_bin verilatorjs/dist/verilator.js
           cp -v verilator/bin/verilator_bin.wasm verilatorjs/dist/
-          cp verilator/LICENSE verilatorjs/
+          cp -v verilator/LICENSE verilatorjs/
 
       - name: Installing npm
         if: ${{ steps.version_check.outputs.uptodate != 1 }}
@@ -101,4 +101,5 @@ jobs:
           git add .
           git commit -m "Auto build of version ${{ steps.version_check.outputs.version }}"
           git tag "v${{ steps.version_check.outputs.version }}"
-          git push --follow-tags
+          git push
+          git push --tags
