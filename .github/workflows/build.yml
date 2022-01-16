@@ -3,9 +3,9 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [ build ]
+    branches: [ master ]
   pull_request:
-    branches: [ build ]
+    branches: [ master ]
   schedule:
     - cron: '0 2 * * *'
 
@@ -35,10 +35,10 @@ jobs:
         run: sudo pacman -S --noconfirm git
         # the actions/checkout@v2 requires this to make an actual git clone.
 
-      - name: Checkout master branch
+      - name: Checkout build result
         uses: actions/checkout@v2
         with:
-          ref: master
+          repository: yuyichao/verilatorjs
           path: verilatorjs
 
       - name: Find latest verilator release
